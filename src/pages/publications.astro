@@ -20,6 +20,28 @@ function venue(e: BibEntry): string {
   return prop(e, 'journal') || prop(e, 'booktitle') || prop(e, 'school') || '';
 }
 
+function formatAuthors(raw: string): string {
+  return raw
+    .split(' and ')
+    .map((a) => {
+      a = a.trim();
+      const comma = a.indexOf(',');
+      if (comma === -1) return a; // already "First Last" style
+      const last  = a.slice(0, comma).trim();  // e.g. "Mishra*"
+      const first = a.slice(comma + 1).trim(); // e.g. "Tara P"
+      return `${first} ${last}`;
+    })
+    .join(', ');
+}
+
+function highlightName(authors: string): string {
+  // After formatting, names look like "Tara P Mishra*" or "Tara Prasad Mishra"
+  return authors.replace(
+    /Tara\s+(?:P(?:rasad)?\s+)?Mishra\*?/g,
+    (m) => `<strong class="text-gray-900 font-semibold">${m}</strong>`
+  );
+}
+
 const allEntries: BibEntry[] = parsed.entries;
 
 function byCategory(cat: string) {
@@ -61,7 +83,7 @@ const sections = [
       <ol class="flex flex-col gap-6 list-decimal list-outside ml-5">
         {entries.map((e) => {
           const title   = prop(e, 'title').replace(/\$/g, '');
-          const authors = prop(e, 'author');
+          const authors = formatAuthors(prop(e, 'author'));
           const year    = prop(e, 'year');
           const v       = venue(e);
           const doi     = prop(e, 'doi');
@@ -71,7 +93,7 @@ const sections = [
               <span class="text-gray-500 text-xs mr-1">{year}</span>
               <span class="font-medium">{title}.</span>
               {' '}
-              <span class="text-gray-500">{authors}.</span>
+              <span class="text-gray-500" set:html={highlightName(authors) + '.'}></span>
               {' '}
               {v && <span class="italic font-semibold text-gray-700">{v}</span>}
               {doi && (
