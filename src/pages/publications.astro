@@ -1,0 +1,50 @@
+---
+import Base from '../layouts/Base.astro';
+import { readFileSync } from 'fs';
+import bibtexParse from 'bibtex-parse';
+
+const raw = readFileSync('./src/content/publications/refs.bib', 'utf-8');
+const parsed = bibtexParse.parse(raw);
+
+type BibEntry = {
+  type: string;
+  id: string;
+  properties: Record<string, { value: string }>;
+};
+
+const entries: BibEntry[] = parsed.entries;
+
+// Sort by year descending
+entries.sort((a, b) => {
+  const ay = Number(a.properties.year?.value ?? 0);
+  const by = Number(b.properties.year?.value ?? 0);
+  return by - ay;
+});
+
+function prop(e: BibEntry, key: string) {
+  return e.properties[key]?.value ?? '';
+}
+---
+<Base title="Publications">
+  <h1 class="text-2xl font-bold mb-8">Publications</h1>
+
+  <ul class="flex flex-col gap-6">
+    {entries.map((e) => (
+      <li class="border-l-2 border-gray-200 pl-4">
+        <p class="font-medium leading-snug">{prop(e, 'title')}</p>
+        <p class="text-sm text-gray-500 mt-0.5">{prop(e, 'author')} · {prop(e, 'year')}</p>
+        <p class="text-sm text-gray-500 italic">{prop(e, 'journal') || prop(e, 'booktitle')}</p>
+        {prop(e, 'doi') && (
+          <a
+            href={`https://doi.org/${prop(e, 'doi')}`}
+            class="text-sm text-blue-600 underline hover:text-blue-800"
+            target="_blank"
+            rel="noopener"
+          >
+            DOI
+          </a>
+        )}
+      </li>
+    ))}
+  </ul>
+</Base>
