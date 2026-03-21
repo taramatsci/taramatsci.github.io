@@ -12,39 +12,85 @@ type BibEntry = {
   properties: Record<string, { value: string }>;
 };
 
-const entries: BibEntry[] = parsed.entries;
-
-// Sort by year descending
-entries.sort((a, b) => {
-  const ay = Number(a.properties.year?.value ?? 0);
-  const by = Number(b.properties.year?.value ?? 0);
-  return by - ay;
-});
-
-function prop(e: BibEntry, key: string) {
+function prop(e: BibEntry, key: string): string {
   return e.properties[key]?.value ?? '';
 }
+
+function venue(e: BibEntry): string {
+  return prop(e, 'journal') || prop(e, 'booktitle') || prop(e, 'school') || '';
+}
+
+const allEntries: BibEntry[] = parsed.entries;
+
+function byCategory(cat: string) {
+  return allEntries
+    .filter((e) => prop(e, 'category') === cat)
+    .sort((a, b) => Number(prop(b, 'year') || 0) - Number(prop(a, 'year') || 0));
+}
+
+const lead        = byCategory('lead');
+const significant = byCategory('significant');
+const coauthor    = byCategory('coauthor');
+const thesis      = byCategory('thesis');
+
+const sections = [
+  { label: 'Lead or Co-Lead Author', entries: lead },
+  { label: 'Significant Contributions', entries: significant },
+  { label: 'Co-Author', entries: coauthor },
+  { label: 'PhD Thesis', entries: thesis },
+];
 ---
 <Base title="Publications">
-  <h1 class="text-2xl font-bold mb-8">Publications</h1>
+  <div class="flex items-baseline justify-between mb-8">
+    <h1 class="text-2xl font-bold">Publications</h1>
+    <a
+      href="https://scholar.google.com/citations?user=vtbEcEsAAAAJ&hl=en"
+      target="_blank"
+      rel="noopener"
+      class="text-sm text-blue-600 underline hover:text-blue-800"
+    >
+      Google Scholar
+    </a>
+  </div>
 
-  <ul class="flex flex-col gap-6">
-    {entries.map((e) => (
-      <li class="border-l-2 border-gray-200 pl-4">
-        <p class="font-medium leading-snug">{prop(e, 'title')}</p>
-        <p class="text-sm text-gray-500 mt-0.5">{prop(e, 'author')} · {prop(e, 'year')}</p>
-        <p class="text-sm text-gray-500 italic">{prop(e, 'journal') || prop(e, 'booktitle')}</p>
-        {prop(e, 'doi') && (
-          <a
-            href={`https://doi.org/${prop(e, 'doi')}`}
-            class="text-sm text-blue-600 underline hover:text-blue-800"
-            target="_blank"
-            rel="noopener"
-          >
-            DOI
-          </a>
-        )}
-      </li>
-    ))}
-  </ul>
+  {sections.map(({ label, entries }) => entries.length > 0 && (
+    <section class="mb-12">
+      <h2 class="text-base font-semibold text-gray-500 uppercase tracking-wide mb-5 border-b pb-2">
+        {label}
+      </h2>
+      <ol class="flex flex-col gap-6 list-decimal list-outside ml-5">
+        {entries.map((e) => {
+          const title   = prop(e, 'title').replace(/\$/g, '');
+          const authors = prop(e, 'author');
+          const year    = prop(e, 'year');
+          const v       = venue(e);
+          const doi     = prop(e, 'doi');
+
+          return (
+            <li class="pl-1 text-sm leading-relaxed text-gray-800">
+              <span class="text-gray-500 text-xs mr-1">{year}</span>
+              <span class="font-medium">{title}.</span>
+              {' '}
+              <span class="text-gray-500">{authors}.</span>
+              {' '}
+              {v && <span class="italic font-semibold text-gray-700">{v}</span>}
+              {doi && (
+                <>
+                  {' · '}
+                  <a
+                    href={`https://doi.org/${doi}`}
+                    target="_blank"
+                    rel="noopener"
+                    class="text-blue-600 hover:text-blue-800 font-mono text-xs"
+                  >
+                    {doi}
+                  </a>
+                </>
+              )}
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  ))}
 </Base>
