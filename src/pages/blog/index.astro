@@ -7,7 +7,7 @@ const posts = (await getCollection('blog'))
   .filter((p) => !p.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
 ---
-<Base title="Blog">
+<Base title="Blog" noindex>
   <PageHeader eyebrow="Blog" title="Notes" />
 
   {posts.length === 0 ? (

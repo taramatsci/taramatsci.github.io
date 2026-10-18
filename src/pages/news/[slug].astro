@@ -10,7 +10,7 @@ export async function getStaticPaths() {
 const { item } = Astro.props;
 const { Content } = await item.render();
 ---
-<Base title={item.data.title} description={item.data.description}>
+<Base title={item.data.title} description={item.data.description} noindex>
   <article class="mx-auto max-w-2xl pt-12">
     <a href="/news" class="text-[13px] text-muted hover:text-accent">← All news</a>
     <div class="mt-6 flex items-center gap-3">

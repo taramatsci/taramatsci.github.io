@@ -6,9 +6,11 @@ import { profile } from '../data/site';
 interface Props {
   title: string;
   description?: string;
+  noindex?: boolean;
 }
 const {
   title,
+  noindex = false,
   description = `${profile.name}, ${profile.role} at the ${profile.unit}, ${profile.institute}. ${profile.tagline}.`,
 } = Astro.props;
 
@@ -24,6 +26,43 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const isActive = (href: string) => path === href || path.startsWith(href + '/');
 const pageTitle = path === '/' ? `${profile.name} · Electron Microscopy & Materials` : `${title} · ${profile.name}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+
+// Structured data so search engines can identify the person behind the site.
+const personLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: profile.name,
+  alternateName: ['Tara Mishra', 'Tara Prasad Mishra', 'Dr. Tara P. Mishra'],
+  url: Astro.site?.href,
+  image: new URL('/profile.jpg', Astro.site).href,
+  email: `mailto:${profile.email}`,
+  jobTitle: profile.role,
+  description: `${profile.tagline}.`,
+  worksFor: {
+    '@type': 'ResearchOrganization',
+    name: profile.institute,
+    department: { '@type': 'Organization', name: profile.unit },
+    url: profile.links.mpi,
+  },
+  workLocation: { '@type': 'Place', name: profile.location },
+  alumniOf: [
+    { '@type': 'CollegeOrUniversity', name: 'National University of Singapore' },
+    { '@type': 'CollegeOrUniversity', name: 'Indian Institute of Science' },
+  ],
+  knowsAbout: [
+    'Electron microscopy',
+    'Aberration-corrected STEM',
+    '4D-STEM',
+    'Electron energy loss spectroscopy (EELS)',
+    'Battery materials',
+    'Energy storage',
+    'Autonomous electron microscopy',
+    'Density functional theory',
+    'Kinetic Monte Carlo',
+    'Computational materials science',
+  ],
+  sameAs: [profile.links.orcid, profile.links.scholar, profile.links.github],
+};
 ---
 <!doctype html>
 <html lang="en" class="scroll-smooth">
@@ -33,6 +72,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex, follow" />}
+    {path === '/' && <script type="application/ld+json" set:html={JSON.stringify(personLd)} />}
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
