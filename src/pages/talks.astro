@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import { talks } from '../data/site';
+
+const years = [...new Set(talks.map((t) => t.year))];
+const invited = talks.filter((t) => t.kind.startsWith('Invited')).length;
+const kindStyle: Record<string, string> = {
+  'Invited talk': 'border-accent/40 text-accent',
+  'Invited workshop': 'border-accent/40 text-accent',
+  Oral: 'border-plum/40 text-plum',
+  Poster: '',
+};
+---
+<Base title="Talks" description="Invited and conference presentations by Tara P. Mishra.">
+  <PageHeader eyebrow="Talks" title="Invited & conference presentations">
+    <dl class="mt-8 flex gap-8">
+      <div><dt class="text-[12px] text-muted">Presentations</dt><dd class="font-serif text-3xl">{talks.length}</dd></div>
+      <div><dt class="text-[12px] text-muted">Invited</dt><dd class="font-serif text-3xl">{invited}</dd></div>
+    </dl>
+  </PageHeader>
+
+  <div class="mt-6">
+    {years.map((year) => (
+      <section class="grid gap-2 border-b border-rule py-8 sm:grid-cols-[7rem_1fr] sm:gap-8">
+        <h2 class="font-serif text-3xl text-muted/70">{year}</h2>
+        <ul class="space-y-6">
+          {talks.filter((t) => t.year === year).map((t) => (
+            <li>
+              <div class="flex flex-wrap items-center gap-2">
+                <span class:list={['chip', kindStyle[t.kind]]}>{t.kind}</span>
+                {t.note && <span class="chip border-accent bg-accent/10 text-accent">{t.note}</span>}
+                {t.month && <span class="font-mono text-[11.5px] text-muted">{t.month} {t.year}</span>}
+              </div>
+              <p class="mt-2 font-serif text-[1.2rem] leading-snug">{t.title}</p>
+              <p class="mt-0.5 text-[14px] text-muted">{t.venue}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))}
+  </div>
+</Base>

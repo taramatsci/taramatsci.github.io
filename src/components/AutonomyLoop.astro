@@ -1,0 +1,105 @@
+---
+// Original schematic of the closed-loop, self-driving microscopy workflow.
+// Rendered horizontally on wide screens and vertically on narrow ones so the
+// labels never shrink below a readable size.
+interface Props {
+  class?: string;
+  /** Force one orientation instead of switching at the sm breakpoint. */
+  layout?: 'auto' | 'horizontal' | 'vertical';
+  /** Larger step names without captions, for small thumbnails. */
+  compact?: boolean;
+}
+const { class: cls = '', layout: layoutProp = 'auto', compact = false } = Astro.props;
+const layout = compact ? 'horizontal' : layoutProp;
+
+const steps = [
+  { label: 'Prepare', sub: 'automated sample prep' },
+  { label: 'Control', sub: 'vendor-agnostic TEM' },
+  { label: 'Acquire', sub: 'STEM · 4D-STEM · EELS' },
+  { label: 'Analyze', sub: 'quantitative analysis' },
+];
+
+// Horizontal geometry
+const H = { w: 146, h: 104, gap: 32, y: 52, x0: 8 };
+const hx = (i: number) => H.x0 + i * (H.w + H.gap);
+// Vertical geometry
+const V = { w: 232, h: 72, gap: 30, x: 16, y0: 40 };
+const vy = (i: number) => V.y0 + i * (V.h + V.gap);
+
+const box = (i: number) => (i === 1 ? 'fill-ink stroke-ink' : 'fill-surface stroke-rule');
+const num = (i: number) => (i === 1 ? 'fill-paper/60' : 'fill-muted');
+const title = (i: number) => (i === 1 ? 'fill-paper' : 'fill-ink');
+const sub = (i: number) => (i === 1 ? 'fill-paper/75' : 'fill-muted');
+
+const show = {
+  horizontal: layout === 'vertical' ? 'hidden' : layout === 'auto' ? 'hidden sm:block' : 'block',
+  vertical: layout === 'horizontal' ? 'hidden' : layout === 'auto' ? 'block sm:hidden' : 'block',
+};
+const id = Math.random().toString(36).slice(2, 8);
+---
+<div class={cls}>
+  <svg viewBox="0 0 680 262" class:list={[show.horizontal, 'h-full w-full overflow-visible']} role="img" aria-labelledby={`lt-${id}`}>
+    <title id={`lt-${id}`}>Self-driving electron microscopy loop: prepare, control, acquire and analyze, with analysis deciding the next measurement.</title>
+    <defs>
+      <marker id={`ah-${id}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 10 5 0 10z" class="fill-muted" />
+      </marker>
+    </defs>
+
+    <path d={`M${hx(3) + H.w / 2} ${H.y + H.h} C${hx(3) + H.w / 2} 240, ${hx(1) + H.w / 2} 240, ${hx(1) + H.w / 2} ${H.y + H.h + 4}`} fill="none" class="stroke-accent" stroke-width="1.6" stroke-dasharray="5 5" marker-end={`url(#ah-${id})`} />
+    {compact ? (
+      <>
+        <rect x="236" y="204" width="220" height="38" rx="19" class="fill-paper stroke-accent/50" stroke-width="1.2" />
+        <text x="346" y="229" text-anchor="middle" class="fill-accent font-sans" font-size="17" font-weight="600">decide next measurement</text>
+      </>
+    ) : (
+      <>
+        <rect x="262" y="208" width="168" height="28" rx="14" class="fill-paper stroke-accent/50" stroke-width="1" />
+        <text x="346" y="226.5" text-anchor="middle" class="fill-accent font-sans" font-size="12" font-weight="600">decide next measurement</text>
+      </>
+    )}
+
+    {steps.slice(0, -1).map((_, i) => (
+      <line x1={hx(i) + H.w + 3} y1={H.y + H.h / 2} x2={hx(i + 1) - 5} y2={H.y + H.h / 2} class="stroke-muted" stroke-width="1.6" marker-end={`url(#ah-${id})`} />
+    ))}
+
+    {steps.map((s, i) => (
+      <g>
+        <rect x={hx(i)} y={H.y} width={H.w} height={H.h} rx="14" class={box(i)} stroke-width="1.2" />
+        <text x={hx(i) + 16} y={H.y + (compact ? 30 : 26)} class:list={['font-mono', num(i)]} font-size={compact ? 15 : 11}>0{i + 1}</text>
+        <text x={hx(i) + 16} y={H.y + (compact ? 74 : 58)} class:list={['font-serif', title(i)]} font-size={compact ? 31 : 23}>{s.label}</text>
+        {!compact && <text x={hx(i) + 16} y={H.y + 82} class:list={['font-sans', sub(i)]} font-size="11">{s.sub}</text>}
+      </g>
+    ))}
+
+    <text x={hx(1) + H.w / 2} y="30" text-anchor="middle" class="fill-plum font-sans" font-size={compact ? 16 : 11.5} font-weight="600" letter-spacing="1.5">NIMBUS</text>
+    <line x1={hx(1) + H.w / 2} y1="37" x2={hx(1) + H.w / 2} y2={H.y - 2} class="stroke-plum" stroke-width="1.2" />
+  </svg>
+
+  <svg viewBox="0 0 320 440" class:list={[show.vertical, 'mx-auto h-auto w-full max-w-[22rem] overflow-visible']} role="img" aria-labelledby={`lv-${id}`}>
+    <title id={`lv-${id}`}>Self-driving electron microscopy loop: prepare, control, acquire and analyze, with analysis deciding the next measurement.</title>
+    <defs>
+      <marker id={`av-${id}`} viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0 0 10 5 0 10z" class="fill-muted" />
+      </marker>
+    </defs>
+
+    <path d={`M${V.x + V.w} ${vy(3) + V.h / 2} C312 ${vy(3) + V.h / 2}, 312 ${vy(1) + V.h / 2}, ${V.x + V.w + 6} ${vy(1) + V.h / 2}`} fill="none" class="stroke-accent" stroke-width="1.6" stroke-dasharray="5 5" marker-end={`url(#av-${id})`} />
+    <text x="304" y={(vy(1) + vy(3) + V.h) / 2} text-anchor="middle" class="fill-accent font-sans" font-size="11" font-weight="600" transform={`rotate(90 304 ${(vy(1) + vy(3) + V.h) / 2})`} dy="-8">decide next</text>
+
+    {steps.slice(0, -1).map((_, i) => (
+      <line x1={V.x + V.w / 2} y1={vy(i) + V.h + 3} x2={V.x + V.w / 2} y2={vy(i + 1) - 5} class="stroke-muted" stroke-width="1.6" marker-end={`url(#av-${id})`} />
+    ))}
+
+    {steps.map((s, i) => (
+      <g>
+        <rect x={V.x} y={vy(i)} width={V.w} height={V.h} rx="14" class={box(i)} stroke-width="1.2" />
+        <text x={V.x + 18} y={vy(i) + 32} class:list={['font-serif', title(i)]} font-size="22">{s.label}</text>
+        <text x={V.x + 18} y={vy(i) + 54} class:list={['font-sans', sub(i)]} font-size="12">{s.sub}</text>
+        <text x={V.x + V.w - 16} y={vy(i) + 30} text-anchor="end" class:list={['font-mono', num(i)]} font-size="11">0{i + 1}</text>
+      </g>
+    ))}
+
+    <text x={V.x + V.w - 16} y={vy(1) + 54} text-anchor="end" class="fill-paper/70 font-sans" font-size="10.5" font-weight="600" letter-spacing="1.2">NIMBUS</text>
+  </svg>
+</div>

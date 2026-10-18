@@ -3,5 +3,5 @@ import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
   site: 'https://taramatsci.github.io',
-  integrations: [tailwind()],
+  integrations: [tailwind({ applyBaseStyles: false })],
 });

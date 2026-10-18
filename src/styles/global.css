@@ -1,3 +1,79 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Colour tokens (RGB channels so Tailwind opacity modifiers work).
+   The accent pair is taken from the magma colour map used in the
+   δ-phase SEND maps: copper for emphasis, plum for secondary marks. */
+:root {
+  --paper: 250 249 246;
+  --surface: 255 255 255;
+  --ink: 22 24 30;
+  --muted: 90 96 110;
+  --rule: 226 223 214;
+  --accent: 176 72 32;
+  --plum: 84 44 120;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: 15 16 20;
+    --surface: 23 25 31;
+    --ink: 234 232 226;
+    --muted: 156 161 173;
+    --rule: 46 49 58;
+    --accent: 239 146 92;
+    --plum: 192 164 230;
+    color-scheme: dark;
+  }
+}
+
+@layer base {
+  html {
+    @apply bg-paper text-ink antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply font-sans text-[15.5px] leading-relaxed;
+  }
+  h1, h2, h3 {
+    @apply font-serif text-ink;
+    font-optical-sizing: auto;
+    letter-spacing: -0.012em;
+  }
+  ::selection {
+    @apply bg-accent/20;
+  }
+  :focus-visible {
+    @apply outline-none ring-2 ring-accent/60 ring-offset-2 ring-offset-paper rounded-sm;
+  }
+}
+
+@layer components {
+  .link {
+    @apply text-ink underline decoration-rule decoration-1 underline-offset-[3px] transition-colors hover:decoration-accent hover:text-accent;
+  }
+  .eyebrow {
+    @apply font-sans text-[11.5px] font-semibold uppercase tracking-[0.14em] text-accent;
+  }
+  .section-title {
+    @apply font-serif text-[1.85rem] sm:text-[2.1rem] leading-tight font-medium;
+  }
+  .card {
+    @apply rounded-xl border border-rule bg-surface;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-rule px-2.5 py-0.5 text-[11.5px] font-medium text-muted;
+  }
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-full border border-rule bg-surface px-4 py-2 text-sm font-medium text-ink transition hover:border-accent/60 hover:text-accent;
+  }
+  .btn-primary {
+    @apply inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper transition hover:bg-accent;
+  }
+  .figure-credit {
+    @apply text-[11.5px] leading-snug text-muted;
+  }
+}

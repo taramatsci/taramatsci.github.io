@@ -1,118 +1,103 @@
 ---
 import Base from '../layouts/Base.astro';
-import { readFileSync } from 'fs';
-import bibtexParse from 'bibtex-parse';
-
-const raw = readFileSync('./src/content/publications/refs.bib', 'utf-8');
-const parsed = bibtexParse.parse(raw);
-
-type BibEntry = {
-  type: string;
-  id: string;
-  properties: Record<string, { value: string }>;
-};
-
-function prop(e: BibEntry, key: string): string {
-  return e.properties[key]?.value ?? '';
-}
-
-function venue(e: BibEntry): string {
-  return prop(e, 'journal') || prop(e, 'booktitle') || prop(e, 'school') || '';
-}
-
-function formatAuthors(raw: string): string {
-  return raw
-    .split(' and ')
-    .map((a) => {
-      a = a.trim();
-      const comma = a.indexOf(',');
-      if (comma === -1) return a; // already "First Last" style
-      const last  = a.slice(0, comma).trim();  // e.g. "Mishra*"
-      const first = a.slice(comma + 1).trim(); // e.g. "Tara P"
-      return `${first} ${last}`;
-    })
-    .join(', ');
-}
-
-function highlightName(authors: string): string {
-  // After formatting, names look like "Tara P Mishra*" or "Tara Prasad Mishra"
-  return authors.replace(
-    /Tara\s+(?:P(?:rasad)?\s+)?Mishra\*?/g,
-    (m) => `<strong class="text-gray-900 font-semibold">${m}</strong>`
-  );
-}
-
-const allEntries: BibEntry[] = parsed.entries;
-
-function byCategory(cat: string) {
-  return allEntries
-    .filter((e) => prop(e, 'category') === cat)
-    .sort((a, b) => Number(prop(b, 'year') || 0) - Number(prop(a, 'year') || 0));
-}
-
-const lead        = byCategory('lead');
-const significant = byCategory('significant');
-const coauthor    = byCategory('coauthor');
-const thesis      = byCategory('thesis');
+import PageHeader from '../components/PageHeader.astro';
+import PubEntry from '../components/PubEntry.astro';
+import Icon from '../components/Icon.astro';
+import { byCategory, publications } from '../lib/publications';
+import { patents, profile } from '../data/site';
 
 const sections = [
-  { label: 'Lead or Co-Lead Author', entries: lead },
-  { label: 'Significant Contributions', entries: significant },
-  { label: 'Co-Author', entries: coauthor },
-  { label: 'PhD Thesis', entries: thesis },
-];
+  { id: 'under-review', label: 'Under review', entries: byCategory('preprint') },
+  { id: 'in-press', label: 'In press', entries: byCategory('inpress') },
+  { id: 'lead', label: 'First, co-first or corresponding author', entries: byCategory('lead') },
+  { id: 'significant', label: 'Significant contributions', entries: byCategory('significant') },
+  { id: 'contributing', label: 'Contributing author', entries: byCategory('coauthor') },
+  { id: 'thesis', label: 'Ph.D. thesis', entries: byCategory('thesis') },
+].filter((s) => s.entries.length > 0);
+
+const peerReviewed = publications.filter((p) => ['lead', 'significant', 'coauthor'].includes(p.category)).length;
 ---
-<Base title="Publications">
-  <div class="flex items-baseline justify-between mb-8">
-    <h1 class="text-2xl font-bold">Publications</h1>
-    <a
-      href="https://scholar.google.com/citations?user=vtbEcEsAAAAJ&hl=en"
-      target="_blank"
-      rel="noopener"
-      class="text-sm text-blue-600 underline hover:text-blue-800"
-    >
-      Google Scholar
-    </a>
+<Base title="Publications" description="Publications, preprints and patents of Tara P. Mishra.">
+  <PageHeader eyebrow="Publications" title="Papers, preprints & patents">
+    <div class="mt-8 flex flex-wrap items-center gap-x-8 gap-y-4">
+      <dl class="flex gap-8">
+        <div><dt class="text-[12px] text-muted">Peer-reviewed</dt><dd class="font-serif text-3xl">{peerReviewed}</dd></div>
+        <div><dt class="text-[12px] text-muted">Lead author</dt><dd class="font-serif text-3xl">{byCategory('lead').length + byCategory('preprint').length + byCategory('inpress').length}</dd></div>
+        <div><dt class="text-[12px] text-muted">Patent applications</dt><dd class="font-serif text-3xl">{patents.filter((p) => p.url).length}</dd></div>
+      </dl>
+      <a href={profile.links.scholar} target="_blank" rel="noopener" class="btn ml-auto"><Icon name="scholar" />Google Scholar</a>
+    </div>
+  </PageHeader>
+
+  <div class="grid gap-12 pt-10 lg:grid-cols-[14rem_1fr]">
+    <aside class="lg:sticky lg:top-24 lg:h-fit">
+      <label class="relative block">
+        <span class="sr-only">Search publications</span>
+        <Icon name="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+        <input id="pub-search" type="search" placeholder="Search title, author, journal" class="w-full rounded-full border border-rule bg-surface py-2 pl-9 pr-3 text-[13px] text-ink placeholder:text-muted/70 focus:border-accent/60 focus:outline-none" />
+      </label>
+      <nav class="mt-6 hidden lg:block" aria-label="Publication sections">
+        <ul class="space-y-1.5 text-[13px]">
+          {sections.map((s) => (
+            <li><a href={`#${s.id}`} class="flex justify-between gap-2 text-muted hover:text-accent"><span>{s.label}</span><span class="font-mono text-[11px]">{s.entries.length}</span></a></li>
+          ))}
+          <li><a href="#patents" class="flex justify-between gap-2 text-muted hover:text-accent"><span>Patents &amp; disclosures</span><span class="font-mono text-[11px]">{patents.length}</span></a></li>
+        </ul>
+      </nav>
+      <p class="mt-6 text-[12px] leading-relaxed text-muted">
+        <sup class="font-semibold text-accent">*</sup> co-first author<br />
+        <sup class="font-semibold text-accent">#</sup> corresponding author
+      </p>
+    </aside>
+
+    <div>
+      {sections.map((s) => (
+        <section id={s.id} class="pub-section scroll-mt-24 pb-10">
+          <h2 class="flex items-baseline justify-between border-b border-ink/80 pb-2 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-ink">
+            {s.label}<span class="font-mono font-normal text-muted">{s.entries.length}</span>
+          </h2>
+          <ol class="divide-y divide-rule">
+            {s.entries.map((p) => <PubEntry pub={p} />)}
+          </ol>
+        </section>
+      ))}
+      <p id="pub-empty" class="hidden py-10 text-center text-muted">No publications match your search.</p>
+
+      <section id="patents" class="scroll-mt-24 pb-6">
+        <h2 class="flex items-baseline justify-between border-b border-ink/80 pb-2 font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-ink">
+          Patents &amp; invention disclosures<span class="font-mono font-normal text-muted">{patents.length}</span>
+        </h2>
+        <ul class="divide-y divide-rule">
+          {patents.map((p) => (
+            <li class="py-4">
+              <p class="font-serif text-[1.12rem] leading-snug">{p.title}</p>
+              <p class="mt-1 text-[13px] text-muted">
+                {p.url ? <a href={p.url} target="_blank" rel="noopener" class="link text-muted">{p.detail}</a> : p.detail}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </div>
   </div>
 
-  {sections.map(({ label, entries }) => entries.length > 0 && (
-    <section class="mb-12">
-      <h2 class="text-base font-semibold text-gray-500 uppercase tracking-wide mb-5 border-b pb-2">
-        {label}
-      </h2>
-      <ol class="flex flex-col gap-6 list-decimal list-outside ml-5">
-        {entries.map((e) => {
-          const title   = prop(e, 'title').replace(/\$/g, '');
-          const authors = formatAuthors(prop(e, 'author'));
-          const year    = prop(e, 'year');
-          const v       = venue(e);
-          const doi     = prop(e, 'doi');
-
-          return (
-            <li class="pl-1 text-sm leading-relaxed text-gray-800">
-              <span class="text-gray-500 text-xs mr-1">{year}</span>
-              <span class="font-medium">{title}.</span>
-              {' '}
-              <span class="text-gray-500" set:html={highlightName(authors) + '.'}></span>
-              {' '}
-              {v && <span class="italic font-semibold text-gray-700">{v}</span>}
-              {doi && (
-                <>
-                  {' · '}
-                  <a
-                    href={`https://doi.org/${doi}`}
-                    target="_blank"
-                    rel="noopener"
-                    class="text-blue-600 hover:text-blue-800 font-mono text-xs"
-                  >
-                    {doi}
-                  </a>
-                </>
-              )}
-            </li>
-          );
-        })}
-      </ol>
-    </section>
-  ))}
+  <script>
+    const input = document.getElementById('pub-search') as HTMLInputElement | null;
+    const empty = document.getElementById('pub-empty');
+    input?.addEventListener('input', () => {
+      const terms = input.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+      let shown = 0;
+      document.querySelectorAll<HTMLElement>('.pub-section').forEach((section) => {
+        let visible = 0;
+        section.querySelectorAll<HTMLElement>('.pub-entry').forEach((li) => {
+          const hit = terms.every((t) => (li.dataset.search ?? '').includes(t));
+          li.hidden = !hit;
+          if (hit) visible++;
+        });
+        section.hidden = visible === 0;
+        shown += visible;
+      });
+      empty?.classList.toggle('hidden', shown > 0);
+    });
+  </script>
 </Base>

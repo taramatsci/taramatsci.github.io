@@ -1,0 +1,31 @@
+---
+// A reused figure with its required attribution line.
+interface Props {
+  src: string;
+  alt: string;
+  caption?: string;
+  credit: string;
+  doi: string;
+  license?: string;
+  class?: string;
+  imgClass?: string;
+}
+const { src, alt, caption, credit, doi, license = 'CC BY 4.0', class: cls = '', imgClass = '' } = Astro.props;
+const licenseUrl: Record<string, string> = {
+  'CC BY 4.0': 'https://creativecommons.org/licenses/by/4.0/',
+};
+---
+<figure class={cls}>
+  <div class="overflow-hidden rounded-lg border border-rule bg-white">
+    <img src={src} alt={alt} loading="lazy" decoding="async" class={`block w-full ${imgClass}`} />
+  </div>
+  <figcaption class="mt-2.5 space-y-1">
+    {caption && <p class="text-[13px] leading-snug text-muted">{caption}</p>}
+    <p class="figure-credit">
+      {credit},{' '}
+      <a href={`https://doi.org/${doi}`} target="_blank" rel="noopener" class="underline decoration-rule underline-offset-2 hover:text-accent">doi:{doi}</a>.
+      {' '}Licensed under{' '}
+      <a href={licenseUrl[license]} target="_blank" rel="noopener" class="underline decoration-rule underline-offset-2 hover:text-accent">{license}</a>.
+    </p>
+  </figcaption>
+</figure>

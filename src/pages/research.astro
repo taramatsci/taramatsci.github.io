@@ -1,32 +1,210 @@
 ---
 import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Figure from '../components/Figure.astro';
+import AutonomyLoop from '../components/AutonomyLoop.astro';
+import Icon from '../components/Icon.astro';
+import { researchAreas } from '../data/site';
+import { publications } from '../lib/publications';
+
+const pubsFor = (dois: string[]) =>
+  dois.map((d) => publications.find((p) => p.doi === d || p.arxiv === d)).filter((p): p is NonNullable<typeof p> => Boolean(p));
+
+const topics = {
+  batteries: pubsFor(['10.1038/s41565-024-01787-y', '10.1002/adma.202412871', '10.26434/chemrxiv.15005574', '10.1039/D6TA05906F', '10.1016/j.mattod.2025.06.024']),
+  electrolytes: pubsFor(['2508.08654', '10.1002/aenm.202403596', '10.1038/s41467-022-32190-7', '10.1016/j.commatsci.2023.112394']),
+  nitrides: pubsFor(['10.1002/advs.76414', '10.1103/PhysRevMaterials.5.024605', '10.1021/acsphotonics.1c01009']),
+  autonomous: pubsFor(['10.1039/D5DD00116A']),
+};
 ---
-<Base title="Research">
-  <h1 class="text-2xl font-bold mb-8">Research</h1>
+<Base title="Research" description="Research of Tara P. Mishra: atomistic engineering of functional materials with correlative electron microscopy and modeling, and self-driving electron microscopy.">
+  <PageHeader
+    eyebrow="Research"
+    title="Seeing, modeling and engineering materials atom by atom"
+    lead="My group works at the intersection of quantitative electron microscopy, computational materials science and automation. Two connected threads run through this work."
+  >
+    <nav class="mt-8 flex flex-wrap gap-2" aria-label="Research areas">
+      {researchAreas.map((a, i) => (
+        <a href={`#${a.id}`} class="btn"><span class="font-mono text-[11px] text-muted">0{i + 1}</span>{a.title}</a>
+      ))}
+    </nav>
+  </PageHeader>
 
-  <div class="flex flex-col gap-10">
+  <!-- Area 1 -->
+  <section id="atomistic" class="scroll-mt-24 py-16">
+    <p class="font-mono text-xs text-muted">01</p>
+    <h2 class="section-title mt-1 max-w-3xl">{researchAreas[0].title}</h2>
+    <p class="mt-4 max-w-3xl text-[16.5px] leading-relaxed text-muted">{researchAreas[0].summary}</p>
 
-    <section>
-      <h2 class="text-lg font-semibold mb-2">Research Area 1</h2>
-      <p class="text-gray-700 leading-relaxed">
-        Describe this research area. What questions does it address? What methods do you use?
-        What are the key findings or goals?
-      </p>
-    </section>
+    <!-- Batteries -->
+    <article id="batteries" class="scroll-mt-24 mt-14 grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
+      <div>
+        <p class="eyebrow">Energy storage</p>
+        <h3 class="mt-2 font-serif text-[1.65rem] leading-snug">Earth-abundant cathodes and the δ phase</h3>
+        <div class="mt-4 space-y-4 text-[15.5px] leading-[1.75] text-ink/85">
+          <p>
+            Manganese-rich disordered rocksalt (DRX) cathodes are a route to high-energy Li-ion
+            batteries built from earth-abundant elements. Using multimodal electron microscopy
+            (atomic-resolution HAADF-STEM, 4D-STEM, EELS and EDS, including under cryogenic conditions),
+            we identified the partially disordered <strong class="font-semibold text-ink">δ phase</strong>
+            that forms in these materials and resolved its nanoengineered microstructure.
+          </p>
+          <p>
+            Scanning electron nanobeam diffraction maps where the δ phase forms within individual
+            particles, while atomic-resolution imaging reveals nanoscale spinel-like domains separated
+            by antiphase boundaries. Building on this, electrochemical pulsing was used to accelerate
+            the formation of the δ phase, and ongoing work uses 4D-STEM techniques such as precession
+            electron diffraction and electron ptychography to understand how earth-abundant layered
+            cathodes transform under electrochemical pulsing.
+          </p>
+        </div>
+        <ul class="mt-6 divide-y divide-rule border-y border-rule">
+          {topics.batteries.map((p) => (
+            <li class="py-3">
+              <a href={`https://doi.org/${p.doi}`} target="_blank" rel="noopener" class="group block">
+                <span class="block text-[14px] leading-snug text-ink group-hover:text-accent" set:html={p.title} />
+                <span class="text-[12.5px] italic text-muted">{p.venue}{p.note ? ` (${p.note.toLowerCase()})` : ''}, {p.year}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div class="space-y-8">
+        <Figure
+          src="/figures/nn-fig4.jpg"
+          alt="Four-panel figure: mean SEND pattern, δ-phase map, atomic-resolution HAADF-STEM image, and Bragg-filtered cation ordering"
+          caption="Multimodal characterization of a δ-phase cathode particle. (a) Mean SEND pattern. (b) Spatial distribution of the δ phase from SEND. (c) Atomic-resolution HAADF-STEM image with Fourier transform inset. (d) Cation ordering from Bragg filtering; the dashed box marks an antiphase boundary. Scale bars in c, d: 5 nm."
+          credit="Reproduced from H.-M. Hau, T. P. Mishra et al., Nature Nanotechnology 19, 1831 (2024), Fig. 4"
+          doi="10.1038/s41565-024-01787-y"
+        />
+        <Figure
+          src="/figures/adma-delta-schematic.jpg"
+          alt="Schematic showing DRX transforming through electrochemical pulsing into the δ phase with antiphase boundaries"
+          caption="Electrochemical pulsing accelerates the transformation of DRX into the δ phase, whose microstructure consists of nanoscale spinel domains separated by antiphase boundaries."
+          credit="Reproduced from T. Holstun, T. P. Mishra et al., Advanced Materials 37, 2412871 (2024), Fig. 8"
+          doi="10.1002/adma.202412871"
+        />
+      </div>
+    </article>
 
-    <section>
-      <h2 class="text-lg font-semibold mb-2">Research Area 2</h2>
-      <p class="text-gray-700 leading-relaxed">
-        Describe this research area.
-      </p>
-    </section>
+    <!-- Solid electrolytes -->
+    <article id="electrolytes" class="scroll-mt-24 mt-20 grid gap-10 border-t border-rule pt-14 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
+      <div>
+        <p class="eyebrow">Ionic transport &amp; interfaces</p>
+        <h3 class="mt-2 font-serif text-[1.65rem] leading-snug">Solid electrolytes, from first principles to degradation</h3>
+        <div class="mt-4 space-y-4 text-[15.5px] leading-[1.75] text-ink/85">
+          <p>
+            Solid-state batteries depend on electrolytes that conduct ions quickly and survive harsh
+            chemical environments. During my Ph.D. I investigated sodium-ion transport in NaSICON
+            superionic conductors using first-principles modeling, and co-developed an all-Python
+            kinetic Monte Carlo package to simulate ionic transport.
+          </p>
+          <p>
+            With electron microscopy, we now study how phosphate-based electrolytes such as LATP
+            degrade in the highly alkaline environment of Li–O<sub>2</sub> batteries.
+          </p>
+        </div>
+      </div>
+      <ul class="h-fit divide-y divide-rule border-y border-rule lg:mt-10">
+        {topics.electrolytes.map((p) => (
+          <li class="py-3.5">
+            <a href={p.doi ? `https://doi.org/${p.doi}` : `https://arxiv.org/abs/${p.arxiv}`} target="_blank" rel="noopener" class="group block">
+              <span class="block font-serif text-[1.05rem] leading-snug text-ink group-hover:text-accent" set:html={p.title} />
+              <span class="text-[12.5px] italic text-muted">{p.venue}, {p.year}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </article>
 
-    <section>
-      <h2 class="text-lg font-semibold mb-2">Research Area 3</h2>
-      <p class="text-gray-700 leading-relaxed">
-        Describe this research area.
-      </p>
-    </section>
+    <!-- Nitrides -->
+    <article id="nitrides" class="scroll-mt-24 mt-20 grid gap-10 border-t border-rule pt-14 lg:grid-cols-[1fr_1.1fr] lg:gap-14">
+      <div>
+        <p class="eyebrow">Optoelectronics</p>
+        <h3 class="mt-2 font-serif text-[1.65rem] leading-snug">Compositional fluctuations in InGaN light emitters</h3>
+        <div class="mt-4 space-y-4 text-[15.5px] leading-[1.75] text-ink/85">
+          <p>
+            Longer-wavelength III-nitride LEDs require InGaN quantum wells with higher indium content.
+            Combining atomically resolved electron energy loss
+            spectroscopy with multiscale computational modeling, we decoded the origin of the
+            compositional fluctuations in InGaN LEDs and proposed strain engineering as an alternative
+            pathway to higher-indium, defect-free devices.
+          </p>
+          <p>
+            Correlating STEM-EELS with cathodoluminescence in individual GaN-on-Si quantum wells
+            links nanoscale compositional segregation directly to optical inhomogeneity.
+          </p>
+        </div>
+        <ul class="mt-6 divide-y divide-rule border-y border-rule">
+          {topics.nitrides.map((p) => (
+            <li class="py-3">
+              <a href={`https://doi.org/${p.doi}`} target="_blank" rel="noopener" class="group block">
+                <span class="block text-[14px] leading-snug text-ink group-hover:text-accent" set:html={p.title} />
+                <span class="text-[12.5px] italic text-muted">{p.venue}, {p.year}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div class="space-y-8">
+        <Figure
+          src="/figures/advs-gan-on-si.jpg"
+          alt="GaN-on-Si wafer, heterostructure schematic, photoluminescence spectra, STEM set-up and cathodoluminescence maps of quantum wells"
+          caption="GaN-on-Si heterostructures studied with atomic-resolution imaging, STEM-EELS and cathodoluminescence. (G–I) HAADF image of 15 InGaN quantum wells and the CL spectra extracted from each."
+          credit="Reproduced from J.-Y. Chung, T. P. Mishra, Z. Mahfoud et al., Advanced Science, e76414 (2026), Fig. 1"
+          doi="10.1002/advs.76414"
+        />
+        <Figure
+          src="/figures/advs-fig3.jpg"
+          alt="STEM and cathodoluminescence of indium-rich precipitates, with atomic-resolution HAADF images and strain maps"
+          caption="The crystal structure of luminescent defects: monochromatic CL maps, atomic HAADF imaging of an In-rich precipitate with strain maps, and a defect boundary along [0001]."
+          credit="Reproduced from J.-Y. Chung, T. P. Mishra, Z. Mahfoud et al., Advanced Science, e76414 (2026), Fig. 3"
+          doi="10.1002/advs.76414"
+        />
+      </div>
+    </article>
+  </section>
 
-  </div>
+  <!-- Area 2 -->
+  <section id="autonomous" class="scroll-mt-24 border-t border-rule py-16">
+    <p class="font-mono text-xs text-muted">02</p>
+    <h2 class="section-title mt-1 max-w-3xl">{researchAreas[1].title}</h2>
+    <p class="mt-4 max-w-3xl text-[16.5px] leading-relaxed text-muted">{researchAreas[1].summary}</p>
+
+    <div class="card mt-10 p-4 sm:p-8">
+      <AutonomyLoop class="mx-auto w-full max-w-3xl" />
+    </div>
+
+    <div class="mt-12 grid gap-6 md:grid-cols-3">
+      <div class="card p-6">
+        <p class="eyebrow">Platform</p>
+        <h3 class="mt-2 font-serif text-xl">NIMBUS</h3>
+        <p class="mt-2 text-[14.5px] leading-relaxed text-muted">
+          A vendor-agnostic platform for high-throughput and self-driving operation of new and
+          legacy transmission electron microscopes, with federated deployment at MPI-FKF and
+          Stanford University and capability extensions at Lawrence Berkeley National Laboratory.
+        </p>
+        <a href="/software" class="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent hover:underline">Software <Icon name="arrow" class="h-3.5 w-3.5" /></a>
+      </div>
+      <div class="card p-6">
+        <p class="eyebrow">Automation</p>
+        <h3 class="mt-2 font-serif text-xl">Autonomous sample preparation</h3>
+        <p class="mt-2 text-[14.5px] leading-relaxed text-muted">
+          Automating electron-microscopy sample preparation and materials characterization for
+          self-driving laboratories.
+        </p>
+        {topics.autonomous.map((p) => (
+          <a href={`https://doi.org/${p.doi}`} target="_blank" rel="noopener" class="mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent hover:underline">{p.venue} {p.year} <Icon name="external" class="h-3.5 w-3.5" /></a>
+        ))}
+      </div>
+      <div class="card p-6">
+        <p class="eyebrow">Correlative</p>
+        <h3 class="mt-2 font-serif text-xl">Clean transfer across instruments</h3>
+        <p class="mt-2 text-[14.5px] leading-relaxed text-muted">
+          A unified sample holder with clean transfer between ambient-pressure XPS and grazing-incidence
+          X-ray scattering beamlines and the TEM, so that the same sample can be followed across techniques.
+        </p>
+      </div>
+    </div>
+  </section>
 </Base>

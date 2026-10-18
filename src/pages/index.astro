@@ -1,68 +1,224 @@
 ---
 import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import AutonomyLoop from '../components/AutonomyLoop.astro';
+import { getCollection } from 'astro:content';
+import { profile, researchAreas, positions, education } from '../data/site';
+import { publications, pubFigures, isSelf } from '../lib/publications';
+
+const news = (await getCollection('news'))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 5);
+
+const selectedDois = [
+  '10.1038/s41565-024-01787-y',
+  '10.1002/adma.202412871',
+  '10.1002/advs.76414',
+  '10.1039/D5DD00116A',
+];
+const selected = selectedDois
+  .map((doi) => publications.find((p) => p.doi === doi))
+  .filter((p): p is NonNullable<typeof p> => Boolean(p));
+
+const shortAuthors = (authors: string[]) => {
+  const i = authors.findIndex((a) => isSelf(a));
+  const first = authors[0].replace(/[*#]/g, '');
+  if (i === 0) return `${first} et al.`;
+  return `${first}, …, T. P. Mishra${authors[i]?.match(/[*#]+$/)?.[0] ?? ''} et al.`;
+};
+
+const fmtMonth = (d: Date) => d.toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' });
 ---
 <Base title="Home">
-  <section class="flex flex-col gap-8">
-    <div class="flex gap-8 items-start">
+  <!-- Hero -->
+  <section class="grid items-center gap-12 pb-20 pt-12 sm:pt-20 lg:grid-cols-[1.05fr_1fr] lg:gap-16">
+    <div>
+      <p class="eyebrow">{profile.role} · {profile.institute}</p>
+      <h1 class="mt-5 font-serif text-[2.9rem] font-medium leading-[1.02] tracking-tight sm:text-[4.2rem]">
+        {profile.name}
+      </h1>
+      <p class="mt-6 max-w-xl font-serif text-[1.4rem] italic leading-snug text-ink/80 sm:text-[1.6rem]">
+        {profile.tagline}.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-2.5">
+        <a href={`mailto:${profile.email}`} class="btn-primary"><Icon name="mail" />Email</a>
+        <a href={profile.links.cv} class="btn"><Icon name="cv" />CV</a>
+        <a href={profile.links.scholar} target="_blank" rel="noopener" class="btn"><Icon name="scholar" />Scholar</a>
+        <a href={profile.links.orcid} target="_blank" rel="noopener" class="btn"><Icon name="orcid" />ORCID</a>
+        <a href={profile.links.github} target="_blank" rel="noopener" class="btn"><Icon name="github" />GitHub</a>
+      </div>
+      <p class="mt-6 flex items-center gap-2 text-[13px] text-muted">
+        <Icon name="pin" class="h-4 w-4" />{profile.unit}, {profile.location}
+      </p>
+    </div>
+
+    <div class="relative mx-auto w-full max-w-xl lg:max-w-none">
+      <div class="absolute -right-3 -top-3 hidden h-full w-full rounded-[1.75rem] border border-accent/30 sm:block" aria-hidden="true"></div>
       <img
         src="/profile.jpg"
-        alt="Tara Mishra"
-        class="w-32 h-32 rounded-full object-cover flex-shrink-0"
+        alt={`${profile.name} at an electron microscope workstation`}
+        width="1600"
+        height="1200"
+        class="relative aspect-[4/3] w-full rounded-[1.75rem] object-cover object-[30%_50%] shadow-xl shadow-black/10"
       />
-      <div class="flex flex-col gap-1">
-        <h1 class="text-2xl font-bold">Dr Tara Mishra</h1>
-        <p class="text-gray-500">Project Scientist · National Center for Electron Microscopy, Molecular Foundry · Lawrence Berkeley National Laboratory</p>
-        <div class="flex gap-3 text-sm text-gray-500 mt-2 flex-wrap">
-          <a href="mailto:tpmishra@lbl.gov" class="underline hover:text-black">Email</a>
-          <span>·</span>
-          <a href="/cv.pdf" class="underline hover:text-black">CV</a>
-          <span>·</span>
-          <a href="https://orcid.org/0000-0002-3000-2555" class="underline hover:text-black" target="_blank" rel="noopener">ORCID</a>
-          <span>·</span>
-          <a href="https://github.com/taramatsci" class="underline hover:text-black" target="_blank" rel="noopener">GitHub</a>
-          <span>·</span>
-          <a href="https://scholar.google.com/citations?user=vtbEcEsAAAAJ&hl=en" class="underline hover:text-black" target="_blank" rel="noopener">Google Scholar</a>
-        </div>
+      <a
+        href="/research#batteries"
+        class="group absolute -bottom-8 left-3 flex w-[17.5rem] items-center gap-3 rounded-2xl border border-rule bg-surface/95 p-2.5 pr-4 shadow-lg shadow-black/10 backdrop-blur sm:-left-10"
+      >
+        <img src="/figures/nn-phase-domains-thumb.jpg" alt="" class="h-14 w-14 rounded-lg object-cover" />
+        <span class="text-[12px] leading-snug text-muted">
+          <span class="block font-medium text-ink group-hover:text-accent">Nanoscale δ-phase domains</span>
+          Bragg-filtered HAADF, <i>Nat. Nanotechnol.</i> 2024
+        </span>
+      </a>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="grid gap-12 border-t border-rule py-20 lg:grid-cols-[1fr_20rem]">
+    <div>
+      <p class="eyebrow">About</p>
+      <h2 class="section-title mt-3">From atoms to devices, and back again</h2>
+      <div class="mt-6 max-w-2xl space-y-4 text-[16px] leading-[1.75] text-ink/85">
+        <p>
+          I am a Group Leader at the Stuttgart Center for Electron Microscopy (StEM) at the
+          <a href={profile.links.mpi} target="_blank" rel="noopener" class="link">Max Planck Institute for Solid State Research</a>.
+          My work bridges atomic-scale structure with macroscopic performance: how local chemistry,
+          defects and microstructural heterogeneity govern the behavior of energy and semiconductor
+          materials, studied with aberration-corrected STEM, 4D-STEM and spectroscopy alongside
+          first-principles and Monte Carlo modeling.
+        </p>
+        <p>
+          In parallel, I lead the development of <strong class="font-semibold text-ink">NIMBUS</strong>,
+          a vendor-agnostic platform for high-throughput and self-driving operation of transmission
+          electron microscopes, deployed at MPI-FKF, Lawrence Berkeley National Laboratory and
+          Stanford University.
+        </p>
+        <p>
+          Previously, I was a Project Scientist at the National Center for Electron Microscopy,
+          Molecular Foundry, Lawrence Berkeley National Laboratory, and a postdoctoral scholar with
+          <a href="https://ceder.berkeley.edu" target="_blank" rel="noopener" class="link">Prof. Gerbrand Ceder</a>,
+          working on earth-abundant Li-ion cathodes and solid-state electrolytes. I received my Ph.D.
+          in Materials Science from the National University of Singapore as a SMART fellow, studying
+          III-nitride LEDs, and my B.Sc. (Research) from the Indian Institute of Science.
+        </p>
       </div>
     </div>
 
-    <div class="flex flex-col gap-4 text-gray-700 leading-relaxed">
-      <p>
-        I am a Project Scientist at the
-        <a href="https://foundry.lbl.gov/about/facilities/the-national-center-for-electron-microscopy-ncem/" class="underline hover:text-black" target="_blank" rel="noopener">National Center for Electron Microscopy (NCEM)</a>
-        at the
-        <a href="https://foundry.lbl.gov" class="underline hover:text-black" target="_blank" rel="noopener">Molecular Foundry</a>,
-        Lawrence Berkeley National Laboratory.
-        My research specializes in advanced electron microscopy for energy materials and the
-        automation of electron microscopy characterization. My expertise encompasses
-        aberration-corrected STEM imaging, EELS spectroscopy, 4D-STEM, and X-ray characterization,
-        with a particular focus on battery and semiconductor materials.
-      </p>
-      <p>
-        I am actively engaged in developing autonomous characterization techniques and software
-        toolkits for image analysis and data processing of complex microscopy signals. A central
-        goal of my work is to bridge atomic-scale structure with macroscopic materials performance —
-        understanding how local chemistry, defects, and microstructural heterogeneity govern the
-        behavior of next-generation energy materials such as disordered rocksalt cathodes and
-        solid electrolytes.
-      </p>
-      <p>
-        I completed my postdoctoral training with the
-        <a href="https://ceder.berkeley.edu" class="underline hover:text-black" target="_blank" rel="noopener">Ceder Group</a>
-        at UC Berkeley and LBNL, where I applied multimodal electron microscopy to study
-        Li-ion cathodes and solid-state electrolytes.
-        I received my Ph.D. from the
-        <a href="https://www.nus.edu.sg" class="underline hover:text-black" target="_blank" rel="noopener">National University of Singapore</a>
-        (2018–2022), where I bridged atomic-scale computational modeling — including DFT,
-        thermodynamic analysis, and kinetic Monte Carlo simulations — with high-resolution
-        electron microscopy to study III-Nitride LED materials.
-      </p>
-      <p>
-        Driven by the goal of innovating future materials through atomic engineering, I take an
-        interdisciplinary approach that integrates microscopy, computational modeling, and advanced
-        characterization. I am passionate about developing large-scale data workflows and open-source
-        toolkits that accelerate materials discovery.
-      </p>
+    <aside class="card h-fit p-6">
+      <p class="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-muted">Path</p>
+      <ol class="mt-4 space-y-4 border-l border-rule pl-5">
+        {[...positions, ...education.slice(0, 2)].map((p, i) => (
+          <li class="relative">
+            <span class:list={['absolute -left-[25px] top-1.5 h-2 w-2 rounded-full ring-4 ring-surface', i === 0 ? 'bg-accent' : 'bg-rule']}></span>
+            <p class="font-mono text-[11px] text-muted">{p.period}</p>
+            <p class="text-[14px] font-medium leading-snug text-ink">{p.title}</p>
+            <p class="text-[13px] leading-snug text-muted">{p.org}</p>
+          </li>
+        ))}
+      </ol>
+      <a href="/cv" class="mt-5 inline-flex items-center gap-1.5 text-[13px] font-medium text-accent hover:underline">Full CV <Icon name="arrow" class="h-3.5 w-3.5" /></a>
+    </aside>
+  </section>
+
+  <!-- Research -->
+  <section class="border-t border-rule py-20">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Research</p>
+        <h2 class="section-title mt-3">Two threads, one goal</h2>
+      </div>
+      <a href="/research" class="inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-accent">Explore research <Icon name="arrow" class="h-4 w-4" /></a>
     </div>
+
+    <div class="mt-10 grid gap-6 md:grid-cols-2">
+      <a href="/research#atomistic" class="card group flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5">
+        <div class="grid h-56 grid-cols-2 grid-rows-1 overflow-hidden bg-black [&>img]:min-h-0">
+          <img src="/figures/nn-delta-map.jpg" alt="Map of δ-phase fraction across a cathode particle" class="h-full w-full object-cover" />
+          <img src="/figures/nn-haadf.jpg" alt="Atomic-resolution HAADF-STEM image of the δ phase" class="h-full w-full object-cover" />
+        </div>
+        <div class="flex flex-1 flex-col p-6">
+          <p class="font-mono text-[11px] text-muted">01</p>
+          <h3 class="mt-1 font-serif text-2xl leading-snug group-hover:text-accent">{researchAreas[0].title}</h3>
+          <p class="mt-2 text-[14.5px] leading-relaxed text-muted">{researchAreas[0].summary}</p>
+          <p class="figure-credit mt-auto pt-4">Images adapted from Hau, Mishra et al., <i>Nat. Nanotechnol.</i> 2024 (CC BY 4.0).</p>
+        </div>
+      </a>
+      <a href="/research#autonomous" class="card group flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5">
+        <div class="flex h-56 items-center justify-center bg-paper px-5 py-4">
+          <AutonomyLoop compact class="h-full w-full max-w-[30rem]" />
+        </div>
+        <div class="flex flex-1 flex-col p-6">
+          <p class="font-mono text-[11px] text-muted">02</p>
+          <h3 class="mt-1 font-serif text-2xl leading-snug group-hover:text-accent">{researchAreas[1].title}</h3>
+          <p class="mt-2 text-[14.5px] leading-relaxed text-muted">{researchAreas[1].summary}</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- Selected publications -->
+  <section class="border-t border-rule py-20">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">Selected publications</p>
+        <h2 class="section-title mt-3">Recent highlights</h2>
+      </div>
+      <a href="/publications" class="inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-accent">All {publications.length} publications <Icon name="arrow" class="h-4 w-4" /></a>
+    </div>
+
+    <ul class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {selected.map((p) => {
+        const fig = pubFigures[p.doi];
+        return (
+          <li>
+            <a href={`https://doi.org/${p.doi}`} target="_blank" rel="noopener" class="card group flex h-full flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-black/5">
+              {fig ? (
+                <div class="aspect-[4/3] overflow-hidden border-b border-rule bg-white">
+                  <img src={fig.src} alt={fig.alt} loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+                </div>
+              ) : (
+                <div class="flex aspect-[4/3] items-end border-b border-rule bg-gradient-to-br from-plum/15 via-accent/10 to-transparent p-5">
+                  <span class="font-serif text-lg italic text-ink/70">{p.venue}</span>
+                </div>
+              )}
+              <div class="flex flex-1 flex-col p-5">
+                <p class="text-[12px] font-medium text-accent">{p.venue} · {p.year}</p>
+                <h3 class="mt-1.5 font-serif text-[1.08rem] leading-snug text-ink" set:html={p.title} />
+                <p class="mt-auto pt-3 text-[12px] text-muted">{shortAuthors(p.authors)}</p>
+              </div>
+            </a>
+          </li>
+        );
+      })}
+    </ul>
+    <p class="figure-credit mt-4">Thumbnails reproduced from the respective open-access articles under CC BY 4.0.</p>
+  </section>
+
+  <!-- News -->
+  <section class="border-t border-rule py-20">
+    <div class="flex flex-wrap items-end justify-between gap-4">
+      <div>
+        <p class="eyebrow">News</p>
+        <h2 class="section-title mt-3">Latest</h2>
+      </div>
+      <a href="/news" class="inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-accent">All news <Icon name="arrow" class="h-4 w-4" /></a>
+    </div>
+    <ul class="mt-8 divide-y divide-rule border-y border-rule">
+      {news.map((item) => (
+        <li class="grid gap-1 py-5 sm:grid-cols-[8rem_6.5rem_1fr] sm:items-baseline sm:gap-6">
+          <span class="font-mono text-[12px] text-muted">{fmtMonth(item.data.date)}</span>
+          <span><span class="chip">{item.data.tag}</span></span>
+          <div>
+            <p class="font-serif text-[1.15rem] leading-snug text-ink">
+              {item.data.link ? (
+                <a href={item.data.link} target="_blank" rel="noopener" class="hover:text-accent">{item.data.title}</a>
+              ) : item.data.title}
+            </p>
+            <p class="mt-1 text-[14px] leading-relaxed text-muted">{item.data.description}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
   </section>
 </Base>

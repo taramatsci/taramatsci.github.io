@@ -1,37 +1,126 @@
 ---
+import '../styles/global.css';
+import Icon from '../components/Icon.astro';
+import { profile } from '../data/site';
+
 interface Props {
   title: string;
+  description?: string;
 }
-const { title } = Astro.props;
+const {
+  title,
+  description = `${profile.name}, ${profile.role} at the ${profile.unit}, ${profile.institute}. ${profile.tagline}.`,
+} = Astro.props;
+
 const nav = [
-  { href: '/', label: 'Home' },
   { href: '/research', label: 'Research' },
   { href: '/publications', label: 'Publications' },
-  { href: '/blog', label: 'Blog' },
+  { href: '/software', label: 'Software' },
+  { href: '/talks', label: 'Talks' },
+  { href: '/news', label: 'News' },
+  { href: '/cv', label: 'CV' },
 ];
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (href: string) => path === href || path.startsWith(href + '/');
+const pageTitle = path === '/' ? `${profile.name} · Electron Microscopy & Materials` : `${title} · ${profile.name}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 <!doctype html>
 <html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title} — Dr Tara Mishra</title>
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={new URL('/profile.jpg', Astro.site)} />
+    <meta name="theme-color" content="#faf9f6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f1014" media="(prefers-color-scheme: dark)" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap"
+    />
   </head>
-  <body class="bg-white text-gray-900 font-sans max-w-3xl mx-auto px-6 py-10">
-    <header class="flex justify-between items-center mb-12 border-b pb-4">
-      <a href="/" class="font-semibold text-lg tracking-tight">Tara Mishra</a>
-      <nav class="flex gap-6 text-sm text-gray-500">
-        {nav.map(({ href, label }) => (
-          <a href={href} class="hover:text-black transition-colors">{label}</a>
-        ))}
-      </nav>
+  <body class="min-h-screen">
+    <a href="#main" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-surface focus:px-3 focus:py-2">Skip to content</a>
+
+    <header class="sticky top-0 z-40 border-b border-rule/70 bg-paper/85 backdrop-blur-md">
+      <div class="mx-auto flex h-16 max-w-page items-center justify-between px-5 sm:px-8">
+        <a href="/" class="group flex items-baseline gap-2.5">
+          <span class="font-serif text-[1.3rem] font-medium tracking-tight text-ink">{profile.name}</span>
+          <span class="hidden text-[12px] font-medium text-muted md:inline">{profile.instituteShort} · StEM</span>
+        </a>
+
+        <nav aria-label="Main" class="hidden items-center gap-1 lg:flex">
+          {nav.map(({ href, label }) => (
+            <a
+              href={href}
+              aria-current={isActive(href) ? 'page' : undefined}
+              class:list={[
+                'rounded-full px-3 py-1.5 text-[13.5px] font-medium transition-colors',
+                isActive(href) ? 'bg-ink/[0.06] text-ink' : 'text-muted hover:text-ink',
+              ]}
+            >{label}</a>
+          ))}
+        </nav>
+
+        <details class="group relative lg:hidden">
+          <summary class="flex cursor-pointer list-none items-center gap-2 rounded-full border border-rule px-3.5 py-1.5 text-[13px] font-medium text-ink [&::-webkit-details-marker]:hidden">
+            Menu
+            <svg class="h-3.5 w-3.5 transition group-open:rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+          </summary>
+          <nav aria-label="Mobile" class="absolute right-0 mt-2 w-52 overflow-hidden rounded-xl border border-rule bg-surface py-1.5 shadow-lg shadow-black/5">
+            <a href="/" class:list={['block px-4 py-2 text-sm', path === '/' ? 'text-accent' : 'text-ink']}>Home</a>
+            {nav.map(({ href, label }) => (
+              <a href={href} class:list={['block px-4 py-2 text-sm', isActive(href) ? 'text-accent' : 'text-ink']}>{label}</a>
+            ))}
+          </nav>
+        </details>
+      </div>
     </header>
-    <main>
+
+    <main id="main" class="mx-auto max-w-page px-5 sm:px-8">
       <slot />
     </main>
-    <footer class="mt-20 pt-4 border-t text-xs text-gray-400 text-center">
-      © {new Date().getFullYear()} Tara Mishra · Lawrence Berkeley National Laboratory
+
+    <footer class="mt-28 border-t border-rule">
+      <div class="mx-auto grid max-w-page gap-10 px-5 py-12 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr]">
+        <div>
+          <p class="font-serif text-xl text-ink">{profile.name}</p>
+          <p class="mt-2 text-sm leading-relaxed text-muted">
+            {profile.role}, {profile.unit}<br />
+            <a href={profile.links.mpi} target="_blank" rel="noopener" class="link text-muted">{profile.institute}</a><br />
+            {profile.location}
+          </p>
+        </div>
+        <div>
+          <p class="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-muted">Contact</p>
+          <ul class="mt-3 space-y-2 text-sm">
+            <li><a href={`mailto:${profile.email}`} class="link inline-flex items-center gap-2"><Icon name="mail" class="h-4 w-4 text-muted" />{profile.email}</a></li>
+            <li><a href={profile.links.cv} class="link inline-flex items-center gap-2"><Icon name="cv" class="h-4 w-4 text-muted" />Curriculum vitae (PDF)</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-muted">Elsewhere</p>
+          <ul class="mt-3 space-y-2 text-sm">
+            <li><a href={profile.links.scholar} target="_blank" rel="noopener" class="link inline-flex items-center gap-2"><Icon name="scholar" class="h-4 w-4 text-muted" />Google Scholar</a></li>
+            <li><a href={profile.links.orcid} target="_blank" rel="noopener" class="link inline-flex items-center gap-2"><Icon name="orcid" class="h-4 w-4 text-muted" />ORCID</a></li>
+            <li><a href={profile.links.github} target="_blank" rel="noopener" class="link inline-flex items-center gap-2"><Icon name="github" class="h-4 w-4 text-muted" />GitHub</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="border-t border-rule/70">
+        <p class="mx-auto max-w-page px-5 py-5 text-xs text-muted sm:px-8">
+          © {new Date().getFullYear()} {profile.name}. Figures reproduced from open-access publications are credited where shown.
+        </p>
+      </div>
     </footer>
   </body>
 </html>

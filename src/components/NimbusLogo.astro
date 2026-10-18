@@ -1,0 +1,48 @@
+---
+// NIMBUS logo, redrawn as vector from the original artwork (public/nimbus-logo.svg
+// is the standalone copy). Details are masked out as true holes, so a single
+// `color` works on any background.
+interface Props {
+  color?: string;
+  wordmark?: boolean;
+  class?: string;
+}
+const { color = '#1F5371', wordmark = true, class: cls = '' } = Astro.props;
+const id = `nimbus-${Math.random().toString(36).slice(2, 8)}`;
+---
+<svg viewBox={wordmark ? '0 0 300 250' : '30 0 240 175'} class={cls} role="img" aria-label="NIMBUS">
+  <defs>
+    <mask id={id} maskUnits="userSpaceOnUse" x="0" y="0" width="300" height="250">
+      <rect width="300" height="250" fill="#fff" />
+      <rect x="50" y="52" width="54" height="4.5" fill="#000" />
+      <rect x="50" y="78" width="54" height="4.5" fill="#000" />
+      <g fill="none" stroke="#000" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M118 124 L142 100 H150" />
+        <path d="M118 124 H182" />
+        <path d="M118 124 L136 142 H198" />
+      </g>
+      <g fill="#000">
+        <circle cx="118" cy="124" r="6" />
+        <circle cx="156" cy="100" r="7" />
+        <circle cx="188" cy="124" r="7" />
+        <circle cx="204" cy="142" r="7" />
+      </g>
+    </mask>
+  </defs>
+
+  <g fill={color} mask={`url(#${id})`}>
+    <rect x="55" y="12" width="44" height="10" rx="3" />
+    <path d="M59 26 H95 L90.5 108 H63.5 Z" />
+    <path fill-rule="evenodd" d="M77 107.75 a16.25 16.25 0 1 0 0.001 0 Z M77 114.25 a9.75 9.75 0 1 1 -0.001 0 Z" />
+    <rect x="74" y="136" width="6" height="22" />
+    <rect x="42" y="157" width="64" height="8" rx="4" />
+    <rect x="90" y="120" width="26" height="8" />
+    <circle cx="141" cy="96" r="38" />
+    <circle cx="199" cy="104" r="48" />
+    <rect x="103" y="110" width="154" height="55" rx="27.5" />
+  </g>
+
+  {wordmark && (
+    <text x="152.5" y="228" text-anchor="middle" fill={color} font-family="Inter, 'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="46" font-weight="600" letter-spacing="5">NIMBUS</text>
+  )}
+</svg>

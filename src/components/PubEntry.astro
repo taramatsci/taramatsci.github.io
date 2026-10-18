@@ -1,0 +1,44 @@
+---
+import type { Publication } from '../lib/publications';
+import { isSelf } from '../lib/publications';
+
+interface Props {
+  pub: Publication;
+  compact?: boolean;
+}
+const { pub, compact = false } = Astro.props;
+
+// Wrap the author's own name and render the */# markers as superscripts.
+const authorsHtml = pub.authors
+  .map((a) => {
+    const m = a.match(/^(.*?)([*#]*)$/)!;
+    const marks = m[2] ? `<sup class="text-accent font-semibold">${m[2]}</sup>` : '';
+    return isSelf(m[1])
+      ? `<span class="font-semibold text-ink">${m[1]}</span>${marks}`
+      : `${m[1]}${marks}`;
+  })
+  .join(', ');
+
+const searchText = [pub.title, pub.authors.join(' '), pub.venue, pub.year].join(' ').toLowerCase();
+---
+<li class="group pub-entry relative grid grid-cols-[3.25rem_1fr] gap-x-4 py-4" data-search={searchText}>
+  <span class="pt-[3px] font-mono text-xs text-muted tabular-nums">{pub.year || ''}</span>
+  <div class="min-w-0">
+    <p class={`font-serif leading-snug text-ink ${compact ? 'text-[1.05rem]' : 'text-[1.12rem]'}`} set:html={pub.title} />
+    {!compact && <p class="mt-1 text-[13.5px] leading-relaxed text-muted" set:html={authorsHtml} />}
+    <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px]">
+      {pub.venue && <span class="font-medium italic text-ink/85">{pub.venue}</span>}
+      {pub.note && <span class="chip border-accent/40 text-accent">{pub.note}</span>}
+      {pub.doi && (
+        <a href={`https://doi.org/${pub.doi}`} target="_blank" rel="noopener" class="inline-flex items-center gap-1 font-mono text-[11.5px] text-muted transition hover:text-accent">
+          {pub.doiLabel ? `${pub.doiLabel} · ` : 'doi:'}{pub.doi}
+        </a>
+      )}
+      {pub.arxiv && (
+        <a href={`https://arxiv.org/abs/${pub.arxiv}`} target="_blank" rel="noopener" class="inline-flex items-center gap-1 font-mono text-[11.5px] text-muted transition hover:text-accent">
+          arXiv:{pub.arxiv}
+        </a>
+      )}
+    </div>
+  </div>
+</li>

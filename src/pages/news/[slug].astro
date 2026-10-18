@@ -1,0 +1,31 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const news = await getCollection('news');
+  return news.map((item) => ({ params: { slug: item.slug }, props: { item } }));
+}
+
+const { item } = Astro.props;
+const { Content } = await item.render();
+---
+<Base title={item.data.title} description={item.data.description}>
+  <article class="mx-auto max-w-2xl pt-12">
+    <a href="/news" class="text-[13px] text-muted hover:text-accent">← All news</a>
+    <div class="mt-6 flex items-center gap-3">
+      {item.data.tag && <span class="chip">{item.data.tag}</span>}
+      <span class="font-mono text-[12px] text-muted">
+        {item.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', timeZone: 'UTC' })}
+      </span>
+    </div>
+    <h1 class="mt-4 font-serif text-4xl font-medium leading-tight">{item.data.title}</h1>
+    <p class="mt-4 text-[17px] leading-relaxed text-muted">{item.data.description}</p>
+    {item.data.link && (
+      <a href={item.data.link} target="_blank" rel="noopener" class="btn mt-6">Read more ↗</a>
+    )}
+    <div class="prose prose-neutral mt-8 max-w-none dark:prose-invert">
+      <Content />
+    </div>
+  </article>
+</Base>

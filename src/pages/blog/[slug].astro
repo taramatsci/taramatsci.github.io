@@ -13,10 +13,13 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await post.render();
 ---
-<Base title={post.data.title}>
-  <article class="prose prose-gray max-w-none">
-    <h1>{post.data.title}</h1>
-    <p class="text-sm text-gray-400 not-prose">{post.data.date.toDateString()}</p>
-    <Content />
+<Base title={post.data.title} description={post.data.description}>
+  <article class="mx-auto max-w-2xl pt-12">
+    <a href="/blog" class="text-[13px] text-muted hover:text-accent">← All posts</a>
+    <p class="mt-6 font-mono text-[12px] text-muted">{post.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}</p>
+    <h1 class="mt-2 font-serif text-4xl font-medium leading-tight">{post.data.title}</h1>
+    <div class="prose prose-neutral mt-8 max-w-none prose-headings:font-serif prose-headings:font-medium dark:prose-invert">
+      <Content />
+    </div>
   </article>
 </Base>

@@ -1,0 +1,56 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHeader from '../components/PageHeader.astro';
+import Icon from '../components/Icon.astro';
+import NimbusLogo from '../components/NimbusLogo.astro';
+import { software, profile } from '../data/site';
+
+const [nimbus, ...others] = software;
+const NIMBUS_BLUE = '#1F5371';
+---
+<Base title="Software" description="Open-source and platform software developed or contributed to by Tara P. Mishra.">
+  <PageHeader
+    eyebrow="Software"
+    title="Tools for quantitative & autonomous microscopy"
+    lead="Image and signal processing toolkits for extracting quantitative information from electron microscopy, and platforms that let microscopes run themselves."
+  >
+    <a href={profile.links.github} target="_blank" rel="noopener" class="btn mt-8"><Icon name="github" />@taramatsci on GitHub</a>
+  </PageHeader>
+
+  <article class="mt-12 grid items-center gap-8 overflow-hidden rounded-xl p-7 text-white sm:p-10 md:grid-cols-[16rem_1fr] md:gap-12" style={`background:${NIMBUS_BLUE}`}>
+    <NimbusLogo color="#FFFFFF" class="mx-auto w-48 md:w-full" />
+    <div>
+      <p class="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-white/65">{nimbus.role}</p>
+      <h2 class="sr-only">{nimbus.name}</h2>
+      <p class="mt-3 font-serif text-[1.45rem] leading-snug text-white">{nimbus.description}</p>
+      {nimbus.deployments.length > 0 && (
+        <div class="mt-6">
+          <p class="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-white/65">Deployed at</p>
+          <ul class="mt-2 flex flex-wrap gap-2">
+            {nimbus.deployments.map((d) => <li class="rounded-full border border-white/30 px-3 py-1 text-[12.5px] text-white/90">{d}</li>)}
+          </ul>
+        </div>
+      )}
+      {nimbus.url && (
+        <a href={nimbus.url} target="_blank" rel="noopener" class="mt-6 inline-flex items-center gap-2 text-[13px] font-medium text-white hover:underline">
+          <Icon name="github" />Source on GitHub<Icon name="external" class="h-3.5 w-3.5" />
+        </a>
+      )}
+    </div>
+  </article>
+
+  <div class="mt-6 grid gap-6 md:grid-cols-2">
+    {others.map((s) => (
+      <article class="card flex flex-col p-7">
+        <p class="text-[11.5px] font-semibold uppercase tracking-[0.14em] text-accent">{s.role}</p>
+        <h2 class="mt-2 font-serif text-3xl font-medium">{s.name}</h2>
+        <p class="mt-3 flex-1 text-[14.5px] leading-relaxed text-muted">{s.description}</p>
+        {s.url && (
+          <a href={s.url} target="_blank" rel="noopener" class="mt-6 inline-flex items-center gap-2 text-[13px] font-medium text-ink hover:text-accent">
+            <Icon name="github" />Source on GitHub<Icon name="external" class="h-3.5 w-3.5" />
+          </a>
+        )}
+      </article>
+    ))}
+  </div>
+</Base>
