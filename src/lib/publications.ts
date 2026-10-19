@@ -29,6 +29,7 @@ const LATEX: [RegExp, string | ((m: string, c: string) => string)][] = [
   [/\{\\v\{?c\}?\}/g, 'č'],
   [/\{\\'\\i\}/g, 'í'],
   [/\{\\'e\}/g, 'é'],
+  [/\{\\'z\}/g, 'ź'],
   [/\{?\\"\{?([aeiouAEIOU])\}?\}?/g, (_: string, c: string) => (c + '\u0308').normalize('NFC')],
   [/[{}$]/g, ''],
 ];

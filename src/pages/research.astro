@@ -11,7 +11,7 @@ const pubsFor = (dois: string[]) =>
   dois.map((d) => publications.find((p) => p.doi === d || p.arxiv === d)).filter((p): p is NonNullable<typeof p> => Boolean(p));
 
 const topics = {
-  batteries: pubsFor(['10.1038/s41565-024-01787-y', '10.1002/adma.202412871', '10.26434/chemrxiv.15005574', '10.1039/D6TA05906F', '10.1016/j.mattod.2025.06.024']),
+  batteries: pubsFor(['10.1038/s41565-024-01787-y', '10.1002/adma.202412871', '10.1002/aenm.71701', '10.1039/D6TA05906F', '10.1016/j.mattod.2025.06.024']),
   electrolytes: pubsFor(['2508.08654', '10.1002/aenm.202403596', '10.1038/s41467-022-32190-7', '10.1016/j.commatsci.2023.112394']),
   nitrides: pubsFor(['10.1002/advs.76414', '10.1103/PhysRevMaterials.5.024605', '10.1021/acsphotonics.1c01009']),
   autonomous: pubsFor(['10.1039/D5DD00116A']),
